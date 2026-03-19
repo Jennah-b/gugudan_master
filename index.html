@@ -1,11 +1,17 @@
 <!DOCTYPE html>
-<!-- saved from url=(0045)file:///C:/Users/junga/Downloads/index_1.html -->
-<html lang="ko"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
 <title>구구단 마스터 ✨</title>
-<link rel="preconnect" href="https://fonts.googleapis.com/">
-<link href="./index_files/css2" rel="stylesheet">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#302b63">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="구구단">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Jua&family=Noto+Sans+KR:wght@400;700;900&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { 
@@ -237,45 +243,7 @@
 
 <canvas id="confetti-canvas" class="hidden"></canvas>
 
-<div class="app" id="app">
-    <div style="text-align:center;margin-bottom:24px;padding-top:10px">
-      <div class="jua" style="font-size:44px;letter-spacing:-1px">✨ 구구단 마스터 ✨</div>
-      <div style="font-size:15px;opacity:0.7;margin-top:4px">2단~9단 완전정복!</div>
-    </div>
-    <div class="level-badge">
-      <div class="row">
-        <span class="emoji">🌱</span>
-        <div>
-          <div class="jua name">Lv.1 구구단 새싹</div>
-          <div class="pts">총 0pt</div>
-        </div>
-      </div>
-      
-      <div class="progress-label"><span>다음: 🌷 구구단 꽃봉오리</span><span>0/30pt</span></div>
-      <div class="progress-bar"><div class="progress-fill" style="width:0%;background:linear-gradient(90deg,#8BC34A,#E91E63)"></div></div>
-      
-    </div>
-    <div class="mode-card " data-mode="danSelect" style="background:linear-gradient(135deg,#667eea22,#667eea11);border:1px solid #667eea44;animation-delay:0s">
-        <span class="icon">📖</span>
-        <div><div class="jua title">단별 학습</div><div class="desc">한 단씩 차근차근</div></div>
-      </div><div class="mode-card " data-mode="allLearn" style="background:linear-gradient(135deg,#f093fb22,#f093fb11);border:1px solid #f093fb44;animation-delay:0.06s">
-        <span class="icon">📚</span>
-        <div><div class="jua title">전체 학습</div><div class="desc">2~9단 전부!</div></div>
-      </div><div class="mode-card " data-mode="quiz" style="background:linear-gradient(135deg,#4ECDC422,#4ECDC411);border:1px solid #4ECDC444;animation-delay:0.12s">
-        <span class="icon">⏱️</span>
-        <div><div class="jua title">전체 퀴즈</div><div class="desc">7초 안에 O/X!</div></div>
-      </div><div class="mode-card " data-mode="speed" style="background:linear-gradient(135deg,#FF6B6B22,#FF6B6B11);border:1px solid #FF6B6B44;animation-delay:0.18s">
-        <span class="icon">⚡</span>
-        <div><div class="jua title">스피드 챌린지</div><div class="desc">60초 도전!</div></div>
-      </div><div class="mode-card disabled" data-mode="wrong" style="background:linear-gradient(135deg,#FFB34722,#FFB34711);border:1px solid #FFB34744;animation-delay:0.24s">
-        <span class="icon">🔄</span>
-        <div><div class="jua title">오답 복습</div><div class="desc">0개 오답</div></div>
-      </div><div class="mode-card " data-mode="levelMap" style="background:linear-gradient(135deg,#96CEB422,#96CEB411);border:1px solid #96CEB444;animation-delay:0.3s">
-        <span class="icon">🗺️</span>
-        <div><div class="jua title">레벨 맵</div><div class="desc">나의 성장 기록</div></div>
-      </div>
-    <div class="reset-btn" id="resetBtn">데이터 초기화</div>
-  </div>
+<div class="app" id="app"></div>
 
 <script>
 // ═══════════════════════════════════════════════════════
@@ -803,7 +771,17 @@ function renderLevelMap() {
 // BOOT
 // ═══════════════════════════════════════════════════════
 renderHome();
+
+// PWA Service Worker Registration
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').then(reg => {
+      console.log('SW registered:', reg.scope);
+    }).catch(err => {
+      console.log('SW registration failed:', err);
+    });
+  });
+}
 </script>
-
-
-</body></html>
+</body>
+</html>
