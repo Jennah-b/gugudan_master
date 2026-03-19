@@ -598,17 +598,50 @@ function runSpeed() {
   const problems = genAll(true);
   let idx=0, timeLeft=60, streak=0, earnedPts=0, correctCnt=0, wrongCnt=0, feedback=null;
   let timerId = null;
+  let submitting = false;
 
-  timerId = setInterval(() => {
-    timeLeft--;
-    if (timeLeft <= 0) { clearInterval(timerId); renderSpeedResult(); return; }
-    render();
-  }, 1000);
+  // Build DOM once — only text nodes get updated afterwards
+  app().innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+      <span class="jua" id="spTimer" style="font-size:28px;font-weight:900">60초</span>
+      <span id="spStats" style="font-size:14px;opacity:0.7">🔥0연속 | ✅0 | +0pt</span>
+    </div>
+    <div class="timer-bar" style="height:8px"><div class="timer-fill" id="spTimerFill" style="width:100%"></div></div>
+    <div style="height:16px"></div>
+    <div class="speed-card" id="spCard">
+      <div class="jua" id="spQuestion" style="font-size:44px;font-weight:800;margin-bottom:20px"></div>
+      <input type="number" id="speedInput" class="jua speed-input" placeholder="답 입력" autocomplete="off" inputmode="numeric">
+      <div><button class="speed-submit" id="submitBtn">확인 ↵</button></div>
+    </div>
+  `;
+
+  const elTimer = $('#spTimer');
+  const elStats = $('#spStats');
+  const elFill = $('#spTimerFill');
+  const elCard = $('#spCard');
+  const elQ = $('#spQuestion');
+  const elInput = $('#speedInput');
+  const elSubmit = $('#submitBtn');
+
+  function updateUI() {
+    const p = problems[idx];
+    const tc = timeLeft<=10 ? '#FF4444' : timeLeft<=20 ? '#FFB347' : '#4ECDC4';
+    const pct = (timeLeft/60)*100;
+    elTimer.textContent = timeLeft + '초';
+    elTimer.style.color = tc;
+    elStats.textContent = `🔥${streak}연속 | ✅${correctCnt} | +${earnedPts}pt`;
+    elFill.style.width = pct + '%';
+    elFill.style.background = tc;
+    elQ.textContent = `${p.a} × ${p.b} = ?`;
+    // feedback color
+    elCard.className = 'speed-card ' + (feedback || 'neutral');
+  }
 
   function handleSubmit() {
-    const inp = $('#speedInput');
-    if (!inp || !inp.value.trim()) return;
-    const val = parseInt(inp.value);
+    if (submitting) return;
+    if (!elInput || !elInput.value.trim()) return;
+    submitting = true;
+    const val = parseInt(elInput.value);
     const p = problems[idx];
     if (val === p.answer) {
       streak++;
@@ -620,10 +653,29 @@ function runSpeed() {
       streak = 0; wrongCnt++; addWrong(p);
       feedback = 'wrong';
     }
-    setTimeout(() => { feedback = null; idx++; render(); focusInput(); }, 250);
+    updateUI();
+    setTimeout(() => {
+      feedback = null; idx++;
+      elInput.value = '';
+      updateUI();
+      elInput.focus();
+      submitting = false;
+    }, 250);
   }
 
-  function focusInput() { setTimeout(() => { const inp=$('#speedInput'); if(inp) inp.focus(); }, 50); }
+  elSubmit.addEventListener('click', handleSubmit);
+  elInput.addEventListener('keydown', e => { if(e.key==='Enter') handleSubmit(); });
+
+  // Initial render & focus
+  updateUI();
+  setTimeout(() => elInput.focus(), 100);
+
+  // Timer — only updates text, never rebuilds DOM
+  timerId = setInterval(() => {
+    timeLeft--;
+    if (timeLeft <= 0) { clearInterval(timerId); renderSpeedResult(); return; }
+    updateUI();
+  }, 1000);
 
   function renderSpeedResult() {
     app().innerHTML = `
@@ -641,30 +693,6 @@ function runSpeed() {
     `;
     $('#homeBtn').addEventListener('click', renderHome);
   }
-
-  function render() {
-    const p = problems[idx];
-    const tc = timeLeft<=10 ? '#FF4444' : timeLeft<=20 ? '#FFB347' : '#4ECDC4';
-    const pct = (timeLeft/60)*100;
-    const fb = feedback || 'neutral';
-    app().innerHTML = `
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-        <span class="jua" style="font-size:28px;font-weight:900;color:${tc}">${timeLeft}초</span>
-        <span style="font-size:14px;opacity:0.7">🔥${streak}연속 | ✅${correctCnt} | +${earnedPts}pt</span>
-      </div>
-      <div class="timer-bar" style="height:8px"><div class="timer-fill" style="width:${pct}%;background:${tc}"></div></div>
-      <div style="height:16px"></div>
-      <div class="speed-card ${fb}">
-        <div class="jua" style="font-size:44px;font-weight:800;margin-bottom:20px">${p.a} × ${p.b} = ?</div>
-        <input type="number" id="speedInput" class="jua speed-input" placeholder="답 입력" autocomplete="off" inputmode="numeric">
-        <div><button class="speed-submit" id="submitBtn">확인 ↵</button></div>
-      </div>
-    `;
-    $('#submitBtn').addEventListener('click', handleSubmit);
-    $('#speedInput').addEventListener('keydown', e => { if(e.key==='Enter') handleSubmit(); });
-    focusInput();
-  }
-  render();
 }
 
 // ═══════════════════════════════════════════════════════
